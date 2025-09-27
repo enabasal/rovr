@@ -109,7 +109,7 @@ class ZDToDirectory(ModalScreen):
     @work(thread=True)
     def zoxide_updater(self, event: Input.Changed) -> None:
         """Update the list"""
-        search_term = self.query_one("#zoxide_input").value.strip()
+        search_term = event.value.strip()
         # check 1 for queue, to ignore subprocess as a whole
         if self.any_in_queue():
             return
@@ -118,6 +118,8 @@ class ZDToDirectory(ModalScreen):
         show_scores = config["plugins"]["zoxide"].get("show_scores", False)
         if show_scores:
             zoxide_cmd.append("--score")
+        zoxide_cmd.append("--")
+
         zoxide_cmd += search_term.split()
 
         try:
