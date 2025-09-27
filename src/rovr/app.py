@@ -50,7 +50,7 @@ from rovr.navigation_widgets import (
     PathInput,
     UpButton,
 )
-from rovr.screens import DummyScreen, YesOrNo, ZDToDirectory
+from rovr.screens import DummyScreen, Keybinds, YesOrNo, ZDToDirectory
 from rovr.screens.way_too_small import TerminalTooSmall
 from rovr.search_container import SearchInput
 from rovr.variables.constants import MaxPossible, config
@@ -208,6 +208,9 @@ class Application(App, inherit_bindings=False):
         # Not really sure why this can happen, but I will still handle this
         if self.focused is None or not self.focused.id:
             return
+        # if current screen isn't the app screen
+        if len(self.screen_stack) != 1:
+            return
         # Make sure that key binds don't break
         match event.key:
             # placeholder, not yet existing
@@ -330,6 +333,9 @@ class Application(App, inherit_bindings=False):
                         )
 
                 self.push_screen(ZDToDirectory(), on_response)
+            # keybinds
+            case key if key in config["keybinds"]["show_keybinds"]:
+                self.push_screen(Keybinds())
 
     def on_app_blur(self, event: events.AppBlur) -> None:
         self.app_blurred = True
