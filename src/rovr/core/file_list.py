@@ -119,7 +119,9 @@ class FileList(SelectionList, inherit_bindings=False):
         names_in_cwd: list[str] = []
         self.items_in_cwd: set[str] = set()
         try:
-            folders, files = path_utils.get_cwd_object(cwd)
+            folders, files = path_utils.get_cwd_object(
+                cwd, config["settings"]["show_hidden_files"]
+            )
             if folders == [] and files == []:
                 self.list_of_options.append(
                     Selection("   --no-files--", value="", id="", disabled=True)
@@ -231,7 +233,9 @@ class FileList(SelectionList, inherit_bindings=False):
         self.list_of_options = []
 
         try:
-            folders, files = path_utils.get_cwd_object(cwd)
+            folders, files = path_utils.get_cwd_object(
+                cwd, config["settings"]["show_hidden_files"]
+            )
             if folders == [] and files == []:
                 self.list_of_options.append(
                     Selection("  --no-files--", value="", id="", disabled=True)
@@ -477,6 +481,23 @@ class FileList(SelectionList, inherit_bindings=False):
             Segment(" ", style=underlying_style),
             *line,
         ])
+
+    async def toggle_hidden_files(self) -> None:
+        """Toggle the visibility of hidden files."""
+        config["settings"]["show_hidden_files"] = not config["settings"][
+            "show_hidden_files"
+        ]
+        self.update_file_list(add_to_session=False)
+        status = (
+            "[$success underline]shown"
+            if config["settings"]["show_hidden_files"]
+            else "[$error underline]hidden"
+        )
+        self.app.notify(
+            f"Hidden files are now {status}[/]", severity="information", timeout=2.5
+        )
+        if self.parent.parent.query("PreviewContainer > FileList") and not self.dummy:
+            self.highlighted = self.highlighted
 
     async def toggle_mode(self) -> None:
         """Toggle the selection mode between select and normal."""
@@ -724,6 +745,10 @@ class FileList(SelectionList, inherit_bindings=False):
                 case key if key in config["keybinds"]["focus_search"]:
                     event.stop()
                     self.input.focus()
+                # toggle hidden files
+                case key if key in config["keybinds"]["toggle_hidden_files"]:
+                    event.stop()
+                    await self.toggle_hidden_files()
 
     def update_border_subtitle(self) -> None:
         if self.dummy:
