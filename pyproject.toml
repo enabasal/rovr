@@ -100,3 +100,4 @@ preview = true
 
 [tool.ty.rules]
 possibly-unbound-import = "ignore"
+unresolved-attribute = "ignore"

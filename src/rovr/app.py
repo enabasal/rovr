@@ -40,7 +40,12 @@ from rovr.core import (
 from rovr.core.file_list import FileListRightClickOptionList
 from rovr.footer import Clipboard, MetadataContainer, ProcessContainer
 from rovr.functions import icons
-from rovr.functions.path import decompress, ensure_existing_directory, get_filtered_dir_names, normalise
+from rovr.functions.path import (
+    decompress,
+    ensure_existing_directory,
+    get_filtered_dir_names,
+    normalise,
+)
 from rovr.functions.themes import get_custom_themes
 from rovr.header import HeaderArea
 from rovr.navigation_widgets import (
@@ -396,7 +401,9 @@ class Application(App, inherit_bindings=False):
             await asyncio.sleep(1)
             new_cwd = getcwd()
             try:
-                items = get_filtered_dir_names(cwd, config["settings"]["show_hidden_files"])
+                items = get_filtered_dir_names(
+                    cwd, config["settings"]["show_hidden_files"]
+                )
             except OSError:
                 # PermissionError falls under this, but we catch everything else
                 continue
