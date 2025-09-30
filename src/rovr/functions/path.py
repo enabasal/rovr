@@ -94,6 +94,35 @@ def open_file(filepath: str) -> None:
         print(f"Error opening file: {e}")
 
 
+def get_filtered_dir_names(cwd: str | bytes, show_hidden: bool = False) -> set[str]:
+    """
+    Get the names of all items in a directory, respecting the show_hidden setting.
+    This function is used for comparison in file watchers to avoid refresh loops.
+    
+    Args:
+        cwd(str): The working directory to check
+        show_hidden(bool): Whether to include hidden files/folders
+        
+    Returns:
+        set[str]: A set of item names in the directory
+        
+    Raises:
+        PermissionError: When access to the directory is denied
+    """
+    try:
+        listed_dir = os.scandir(cwd)
+    except (PermissionError, FileNotFoundError, OSError):
+        raise PermissionError(f"PermissionError: Unable to access {cwd}")
+    
+    names = set()
+    for item in listed_dir:
+        if not show_hidden and is_hidden_file(item.path):
+            continue
+        names.add(item.name)
+    
+    return names
+
+
 def get_cwd_object(
     cwd: str | bytes, show_hidden: bool = False
 ) -> tuple[list[dict], list[dict]]:
