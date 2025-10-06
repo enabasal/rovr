@@ -1,3 +1,4 @@
+import asyncio
 from os import getcwd, path
 from os import system as cmd
 from typing import ClassVar
@@ -124,7 +125,7 @@ class FileList(SelectionList, inherit_bindings=False):
             )
             if not folders and not files:
                 self.list_of_options.append(
-                    Selection("   --no-files--", value="", id="", disabled=True)
+                    Selection("   --no-files--", value="", disabled=True)
                 )
                 preview = self.app.query_one("PreviewContainer")
                 preview.remove_children()
@@ -138,9 +139,9 @@ class FileList(SelectionList, inherit_bindings=False):
                             label=item["name"],
                             dir_entry=item["dir_entry"],
                             value=path_utils.compress(item["name"]),
-                            id=path_utils.compress(item["name"]),
                         )
                     )
+                    await asyncio.sleep(0)
                     names_in_cwd.append(item["name"])
                 self.items_in_cwd = set(names_in_cwd)
         except PermissionError:
@@ -232,6 +233,7 @@ class FileList(SelectionList, inherit_bindings=False):
         # Separate folders and files
         self.list_of_options = []
 
+        self.loading = True
         try:
             folders, files = path_utils.get_cwd_object(
                 cwd, config["settings"]["show_hidden_files"]
@@ -249,9 +251,9 @@ class FileList(SelectionList, inherit_bindings=False):
                             label=item["name"],
                             dir_entry=item["dir_entry"],
                             value=path_utils.compress(item["name"]),
-                            id=path_utils.compress(item["name"]),
                         )
                     )
+                    await asyncio.sleep(0)  # await so that textual can still be responsive
         except PermissionError:
             self.list_of_options.append(
                 Selection(
@@ -264,10 +266,10 @@ class FileList(SelectionList, inherit_bindings=False):
 
         self.clear_options()
         self.add_options(self.list_of_options)
-        # somehow prevents more debouncing, ill take it
-        self.refresh(repaint=True, layout=True)
+        self.loading = False
 
-    def create_archive_list(self, file_list: list[str]) -> None:
+    @work(exclusive=True)
+    async def create_archive_list(self, file_list: list[str]) -> None:
         """Create a list display for archive file contents.
 
         Args:
@@ -276,6 +278,7 @@ class FileList(SelectionList, inherit_bindings=False):
         self.clear_options()
         self.list_of_options = []
 
+        self.loading = True
         if not file_list:
             self.list_of_options.append(
                 Selection("  --no-files--", value="", id="", disabled=True)
@@ -297,9 +300,10 @@ class FileList(SelectionList, inherit_bindings=False):
                         disabled=True,  # Archive contents are not interactive like regular files
                     )
                 )
+                await asyncio.sleep(0)
 
         self.add_options(self.list_of_options)
-        self.refresh(repaint=True, layout=True)
+        self.loading = False
 
     async def on_selection_list_selected_changed(
         self, event: SelectionList.SelectedChanged
@@ -665,18 +669,18 @@ class FileList(SelectionList, inherit_bindings=False):
                         path.join(
                             getcwd(),
                             path_utils.decompress(
-                                self.get_option_at_index(self.highlighted).id
+                                self.highlighted.value
                             ),
                         )
                     ):
                         with self.app.suspend():
                             cmd(
-                                f'{config["plugins"]["editor"]["folder_executable"]} "{path.join(getcwd(), path_utils.decompress(self.get_option_at_index(self.highlighted).id))}"'
+                                f'{config["plugins"]["editor"]["folder_executable"]} "{path.join(getcwd(), path_utils.decompress(self.highlighted_option.value))}"'
                             )
                     else:
                         with self.app.suspend():
                             cmd(
-                                f'{config["plugins"]["editor"]["file_executable"]} "{path.join(getcwd(), path_utils.decompress(self.get_option_at_index(self.highlighted).id))}"'
+                                f'{config["plugins"]["editor"]["file_executable"]} "{path.join(getcwd(), path_utils.decompress(self.highlighted_option.value))}"'
                             )
                 # hit buttons with keybinds
                 case key if (

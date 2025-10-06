@@ -19,7 +19,7 @@ class PinnedSidebarOption(Option):
 
 class FileListSelectionWidget(Selection):
     def __init__(
-        self, icon: list, label: str, dir_entry: DirEntry, *args, **kwargs
+        self, icon: list, label: str, dir_entry: DirEntry, value: str = "", disabled: bool = False
     ) -> None:
         """
         Initialise the selection.
@@ -29,16 +29,15 @@ class FileListSelectionWidget(Selection):
             label (str): The label for the option.
             dir_entry (DirEntry): The nt.DirEntry class
             value (SelectionType): The value for the selection.
-            initial_state (bool) = False: The initial selected state of the selection.
-            id (str or None) = None: The optional ID for the selection.
             disabled (bool) = False: The initial enabled/disabled state. Enabled by default.
         """
         super().__init__(
             prompt=Content.from_markup(
                 f" [{icon[1]}]{icon[0]}[/{icon[1]}] $name", name=label
             ),
-            *args,
-            **kwargs,
+            value=value,
+            id=value,
+            disabled=disabled
         )
         self.dir_entry = dir_entry
         self.label = label
