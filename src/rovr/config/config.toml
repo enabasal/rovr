@@ -16,6 +16,8 @@ preview_start = "print(\"Hello, world!\")"
 
 compact_mode = false
 
+show_line_numbers = true
+
 [interface.clock]
 enabled = true
 align = "left"
@@ -181,7 +183,6 @@ show_scores = false
 [plugins.bat]
 enabled = false
 executable = "bat"
-show_line_numbers = true
 
 [plugins.editor]
 enabled = false
