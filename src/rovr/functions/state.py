@@ -2,11 +2,18 @@ import json
 import os
 from os import path
 from typing import Any, Dict
+from contextlib import suppress
 
 from rovr.variables.maps import VAR_TO_DIR
 
 
-UI_STATE_FILENAME = path.join(VAR_TO_DIR["CONFIG"], "ui_state.json")
+def _ui_state_filename() -> str:
+    """Return the current UI state filename computed from VAR_TO_DIR.
+
+    This is computed on demand (instead of at import time) so tests and any
+    runtime modifications to VAR_TO_DIR are respected.
+    """
+    return path.join(VAR_TO_DIR["CONFIG"], "ui_state.json")
 _DEFAULT_STATE: Dict[str, Any] = {
     "version": 1,
     # These keys are intentionally optional; callers should merge with
@@ -31,11 +38,12 @@ def load_ui_state() -> Dict[str, Any]:
     Returns an empty dict on any error (missing file, parse error, etc.) so
     callers can fall back to sensible defaults.
     """
-    _ensure_config_dir()
-    if not path.exists(UI_STATE_FILENAME):
+    ui_file = _ui_state_filename()
+    # If the config directory / file doesn't exist, just return defaults.
+    if not path.exists(ui_file):
         return {}
     try:
-        with open(UI_STATE_FILENAME, "r", encoding="utf-8") as f:
+        with open(ui_file, "r", encoding="utf-8") as f:
             data = json.load(f)
             if not isinstance(data, dict):
                 return {}
@@ -61,29 +69,16 @@ def save_ui_state(state: Dict[str, Any]) -> None:
     state_to_write = {**_DEFAULT_STATE, **(state or {})}
     # ensure version present
     state_to_write["version"] = _DEFAULT_STATE["version"]
-    tmp = UI_STATE_FILENAME + ".tmp"
+    ui_file = _ui_state_filename()
+    tmp = ui_file + ".tmp"
     try:
         with open(tmp, "w", encoding="utf-8") as f:
             json.dump(state_to_write, f, indent=2)
-        os.replace(tmp, UI_STATE_FILENAME)
+        os.replace(tmp, ui_file)
     except OSError:
         # best-effort; don't raise
-        with suppress_all():
+        with suppress(OSError):
             pass
-
-
-class suppress_all:
-    """Context manager that suppresses any exception.
-
-    Used sparingly to keep the save operation best-effort without
-    introducing an extra dependency on contextlib.suppress everywhere.
-    """
-
-    def __enter__(self):
-        return None
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        return True
 
 
 def build_state_from_app(app, config: Dict[str, Any] | None = None) -> Dict[str, Any]:
