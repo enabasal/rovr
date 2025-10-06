@@ -312,7 +312,7 @@ class FileList(SelectionList, inherit_bindings=False):
         event.prevent_default()
         cwd = path_utils.normalise(getcwd())
         # Get the selected option
-        selected_option = self.get_option_at_index(self.highlighted)
+        selected_option = self.highlighted_option
         file_name = path_utils.decompress(selected_option.value)
         self.update_border_subtitle()
         if self.dummy and path.isdir(path.join(self.enter_into, file_name)):
@@ -663,13 +663,13 @@ class FileList(SelectionList, inherit_bindings=False):
                     and key in config["plugins"]["editor"]["keybinds"]
                 ):
                     event.stop()
-                    if self.get_option_at_index(self.highlighted).disabled:
+                    if self.highlighted_option.disabled:
                         return
                     if path.isdir(
                         path.join(
                             getcwd(),
                             path_utils.decompress(
-                                self.highlighted.value
+                                self.highlighted_option.value
                             ),
                         )
                     ):
@@ -688,7 +688,7 @@ class FileList(SelectionList, inherit_bindings=False):
                     and key in config["keybinds"]["hist_previous"]
                 ):
                     event.stop()
-                    if self.get_option_at_index(self.highlighted).disabled:
+                    if self.highlighted_option.disabled:
                         return
                     if self.app.query_one("#back").disabled:
                         self.app.query_one("UpButton").on_button_pressed(Button.Pressed)
