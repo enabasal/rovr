@@ -20,6 +20,48 @@
 <!--toc:start-->
 
 - [Screenshot](#screenshot)
+## Persistent UI state
+
+Rovr now persists a small set of UI preferences between sessions. The goal is
+to remember sensible UI choices (so you don't have to reconfigure them every
+time you start the app).
+
+What is saved
+- show_hidden_files (whether dotfiles / hidden files are visible)
+- footer_visible (whether the footer/panels are visible)
+- pinned_sidebar_visible (sidebar visibility)
+- preview_visible (preview sidebar visibility)
+- compact_mode (interface compact mode)
+
+Where the state is stored
+- A JSON file named `ui_state.json` is written to your platform config
+  directory (the same `VAR_TO_DIR['CONFIG']` used elsewhere in the app).
+  To print that folder on your machine run:
+
+```pwsh
+python - <<'PY'
+from rovr.variables.maps import VAR_TO_DIR
+print(VAR_TO_DIR['CONFIG'])
+PY
+```
+
+Resetting the saved state
+- You can remove the persisted UI state from the command line:
+
+```pwsh
+python -m rovr --reset-ui-state
+```
+
+How to test manually
+1. Start rovr and toggle the "show hidden files" option and the footer.
+2. Quit rovr.
+3. Restart rovr and verify the same UI choices are preserved.
+
+Notes
+- The state file is stored in JSON with a simple `version` field for future
+  upgrades. Load and save are best-effort: failures to read/write the file do
+  not block start/quit.
+
 - [Installation](#installation)
 - [Running from source](#running-from-source)
 - [FAQ](#faq)
