@@ -444,7 +444,6 @@ class Application(App, inherit_bindings=False):
             except Exception:
                 # Any failure writing chooser file should not block exit
                 pass
-        self.exit()
         # Persist UI state (best-effort)
         try:
             state = build_state_from_app(self, config=config)
@@ -452,6 +451,7 @@ class Application(App, inherit_bindings=False):
         except Exception:
             # do not block exit on failure to write
             pass
+        self.exit()
 
     def cd(
         self,
