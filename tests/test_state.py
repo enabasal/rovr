@@ -19,7 +19,7 @@ def test_save_and_load_ui_state(tmp_path, monkeypatch):
     state.save_ui_state(sample)
 
     # The file should exist
-    p = Path(state.UI_STATE_FILENAME)
+    p = Path(state._ui_state_filename())
     assert p.exists()
 
     # Loading should include the saved keys
