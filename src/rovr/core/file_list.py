@@ -507,7 +507,7 @@ class FileList(SelectionList, inherit_bindings=False):
 
     async def toggle_mode(self) -> None:
         """Toggle the selection mode between select and normal."""
-        if self.get_option_at_index(self.highlighted).disabled:
+        if self.highlighted_option.disabled and not self.select_mode_enabled:
             return
         self.select_mode_enabled = not self.select_mode_enabled
         if not self.select_mode_enabled:
